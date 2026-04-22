@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-headless-svc
+spec:
+  clusterIP: None # must be in headless service
+  selector: # catch pods of stateful set with this label to make RR and send traffic to them
+    app: postgres-pod # i want pods that have label 'app: postgres-pod'
+
+  ports:
+  - protocol: TCP
+    port: 5432 #service port
+    targetPort: 5432 #container port 

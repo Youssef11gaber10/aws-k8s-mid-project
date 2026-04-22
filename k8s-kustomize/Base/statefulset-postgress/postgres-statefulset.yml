@@ -1,0 +1,88 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres-statefulset
+spec:
+  serviceName: postgres-headless-svc
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres-pod
+  template:
+    metadata:
+      labels:
+        app: postgres-pod
+    spec:
+      containers:
+        - name: postgres-container
+          image: postgres:16
+
+          # expose:
+          #   - port: 5432
+          ports:
+            - containerPort: 5432 # just describtion like expose
+
+
+          envFrom:
+            - secretRef:
+                name: db-postgres-secret # this take all secret values and pu them as env variables
+
+
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "200m"
+
+
+          volumeMounts:
+            - name: postgres-pvc
+              mountPath: /var/lib/postgresql/data
+
+
+          startupProbe: # i see is not appropriate test but just to make any thing , this test can suitable livenessProbe
+            exec:
+              command: ["pg_isready", "-U", "youssef" , "-d", "microservices_db"] 
+            initialDelaySeconds: 30
+            periodSeconds: 10 # must wait 15 sec before check the pod is running or not 
+            timeoutSeconds: 5
+
+
+          livenessProbe:
+            tcpSocket: # made this here to be constinous check if there connection to db
+              port: 5432
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1 # must be 1 
+            failureThreshold: 3 # restart after 3 times of failure the probe
+
+# no need for readiness , here i see won't check latency of db
+          # readinessProbe:
+          #   exec:
+          #     command: ["pg_isready", "-U", "youssef" , "-d", "microservices_db"]
+          #   initialDelaySeconds: 10
+          #   periodSeconds: 10
+          #   timeoutSeconds: 5
+          #   successThreshold: 3
+          #   failureThreshold: 3 # remove from endpoints slice of svc after 3 times of failure
+
+
+  
+  # i want attach pv to this pod , so i will make pvc at level of pod
+  volumeClaimTemplates:
+    - metadata:
+        name: postgres-pvc
+      spec:
+        storageClassName: standard
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+
+
+
+

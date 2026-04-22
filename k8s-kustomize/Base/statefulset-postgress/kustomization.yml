@@ -1,0 +1,3 @@
+resources:
+  - postgres-headless-service.yml
+  - postgres-statefulset.yml

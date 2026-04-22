@@ -1,0 +1,4 @@
+resources:
+  - react-deployment.yml
+  - react-svc.yml
+  - ingress.yml

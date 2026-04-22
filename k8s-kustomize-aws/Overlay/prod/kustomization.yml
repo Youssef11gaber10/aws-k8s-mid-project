@@ -1,0 +1,18 @@
+resources:
+  - ../../Base/
+
+#no need to change this the base ingress (default) is the prod ingress
+# patchesStrategicMerge:
+#   - prod-ingress.yml
+
+replicas:
+  - name: flask-deployment
+    count: 3
+
+  - name: react-deployment
+    count: 3
+
+secretGenerator:
+  - name: db-postgres-secret
+    envs:
+      - ./secrets/postgres-secret.env

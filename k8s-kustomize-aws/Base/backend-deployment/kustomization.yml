@@ -1,0 +1,3 @@
+resources:
+  - ./flask-deployment.yml
+  - ./flask-svc.yml

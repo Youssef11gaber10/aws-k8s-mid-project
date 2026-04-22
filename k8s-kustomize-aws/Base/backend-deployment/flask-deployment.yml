@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flask-deployment
+spec:
+
+  replicas: 1
+
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 2 # so we can pe at update increase to 5pods at once (3 essential, 2 new)
+      maxUnavailable:  1 #so i can work with 2 old replica (not less than that) so the 5 will be (2 old , 3 new)
+
+  selector:
+    matchLabels:
+      app: flask-pod
+
+
+
+  template:
+    metadata:
+      labels:
+        app: flask-pod
+    spec:
+      containers:
+      - name: flask-container
+        image: youssef11gaber10/flask-service:latest #this is public repo no need to login secret credentials
+        imagePullPolicy: IfNotPresent # if node have the image no need to pull from repo
+        ports:
+        - containerPort: 5000
+        envFrom:
+          - secretRef:
+              name: db-postgres-secret # this gives you user, pass and db name
+        #here give him other env variable required for him  , not secrets like other in secret of postgres
+        env: 
+          - name: POSTGRES_HOST
+            value: "postgres-headless-svc"
+          - name: POSTGRES_PORT
+            value: "5432" 
+            
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+
+        startupProbe:
+          tcpSocket:
+            port: 5000
+          initialDelaySeconds: 30
+          failureThreshold: 30
+          periodSeconds: 5
+
+        # livenessProbe:
+        #   httpGet:
+        #     path: /api/tasks
+        #     port: 5000
+        #   initialDelaySeconds: 30
+        #   timeoutSeconds: 10
+        #   periodSeconds: 5    
+
+        # readinessProbe:
+        #   httpGet:
+        #     path: /health
+        #     port: 5000
+        #   initialDelaySeconds: 30
+        #   periodSeconds: 5
+        #   timeoutSeconds: 15
+        #   successThreshold: 3
+        #   failureThreshold: 3

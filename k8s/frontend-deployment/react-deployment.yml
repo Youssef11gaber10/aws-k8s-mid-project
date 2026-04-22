@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: react-deployment
+spec:
+  replicas: 3
+
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 2 # so we can pe at update increase to 5pods at once (3 essential, 2 new)
+      maxUnavailable:  1 #so i can work with 2 old replica (not less than that) so the 5 will be (2 old , 3 new)
+
+  selector:
+    matchLabels:
+      app: react-pod
+  template:
+    metadata:
+      labels:
+        app: react-pod
+
+    spec:
+      containers:
+      - name: react-container
+        image: youssef11gaber10/react-service-k8s:latest #this is public repo no need to login secret credentials
+        imagePullPolicy: IfNotPresent # if node have the image no need to pull from repo
+
+        ports:
+        - containerPort: 80
+
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+
+
+        startupProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 3
+
+        # livenessProbe:
+        #   httpGet:
+        #     path: /
+        #     port: 80
+        #   initialDelaySeconds: 5
+        #   periodSeconds: 5
+        #   timeoutSeconds: 5
+        #   successThreshold: 1
+        #   failureThreshold: 3
+        
+        # readinessProbe:
+        #   httpGet:
+        #     path: /api/tasks
+        #     port: 80
+        #   initialDelaySeconds: 5
+        #   periodSeconds: 5
+        #   timeoutSeconds: 5
+        #   successThreshold: 3
+        #   failureThreshold: 3

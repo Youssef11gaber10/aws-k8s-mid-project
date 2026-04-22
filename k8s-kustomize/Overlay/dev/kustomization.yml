@@ -1,0 +1,17 @@
+resources:
+  - ../../Base/
+
+patchesStrategicMerge:
+  - dev-ingress.yml
+
+replicas:
+  - name: flask-deployment
+    count: 1
+
+  - name: react-deployment
+    count: 1
+
+secretGenerator:
+  - name: db-postgres-secret
+    envs:
+      - ./secrets/postgres-secret.env

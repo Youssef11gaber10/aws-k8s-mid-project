@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: flask-svc
+spec:
+# you will need this service of backend have rule in ingress  becuase frontend is static file run on browser so code frontend will talk to alb-> ingress has rule to backend service
+#you work with 2 types of igress locally nginx ingress ,eks alb ingerss
+
+# for nginx ingress the svc LB that work with ingress will create lb and collect ip of nodes and send traffic to them
+# so will always be ClusterIP and just put the rule to forward trafic to it in ingress.yml
+
+# for alb ingress you have 2 modes instance , here need to make this svc Nodeport , and put the rule to forward traffic to it in ingress.yml
+# mode of pod mode will put this svc clusterIP and put the rule to forward traffic to it in ingress.yml
+
+  type: ClusterIP  # for both alb(pod mode) , nginx will be cluster ip
+  selector:
+    app: flask-pod
+  ports:
+  - protocol: TCP
+    port: 5000
+    targetPort: 5000
