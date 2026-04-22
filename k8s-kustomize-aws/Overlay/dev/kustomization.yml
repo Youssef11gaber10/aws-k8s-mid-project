@@ -11,7 +11,7 @@ replicas:
   - name: react-deployment
     count: 1
 
-secretGenerator:
-  - name: db-postgres-secret
-    envs:
-      - ./secrets/postgres-secret.env
+# secretGenerator:
+#   - name: db-postgres-secret
+#     envs:
+#       - ./secrets/postgres-secret.env
