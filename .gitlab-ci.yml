@@ -28,6 +28,8 @@ slack_pipeline_start:
       curl -X POST -H "Content-type: application/json" --data "{
         \"text\": \"👋 Hello team! Pipeline *#${CI_PIPELINE_ID}* just started on branch *${CI_COMMIT_REF_NAME}*! 🛠️\n\n🥁 *Drum rolls...* Get ready for action! 💪\n\n🎉 Let's hope this one doesn't break prod 😅\n\n🔗 <${CI_PIPELINE_URL}|Click here to watch the show!>\"
       }" $SLACK_WEBHOOK_URL
+  rules:
+    - if: '$CI_COMMIT_BRANCH =~ /^(dev|test|main)$/'
 
 
 # want cache if you will do lint ,test to preserve the dependencies not install each time also cache ansible in last job not every deployment install it again 
@@ -49,6 +51,8 @@ cache:
       - $ARTIFACT_PATH
   needs:
     - slack_pipeline_start
+  rules:
+    - if: '$CI_COMMIT_BRANCH =~ /^(dev|test|main)$/'
     
 install-dependencies-front:
   extends: .install-dependencies-template
@@ -79,6 +83,8 @@ install-dependencies-back:
   script:
     - cd $PLACEHOLDER_DIRECTORY
     - $COMMAND
+  rules:
+    - if: '$CI_COMMIT_BRANCH =~ /^(dev|test|main)$/'
 
 
 lint-front:
@@ -111,6 +117,8 @@ lint-back:
   script:
     - cd $PLACEHOLDER_DIRECTORY
     - $COMMAND
+  rules:
+    - if: '$CI_COMMIT_BRANCH =~ /^(dev|test|main)$/'
 
 test-front:
   extends: .test-template
@@ -148,6 +156,8 @@ test-back:
     - cd $PLACEHOLDER_DIRECTORY
     - docker build  -t  $PLACEHOLDER_LATEST .
     - docker push $PLACEHOLDER_LATEST
+  rules:
+    - if: '$CI_COMMIT_BRANCH =~ /^(dev|test|main)$/'
 
 dockarize-react:
   extends: .dockerize_template
@@ -166,6 +176,7 @@ dockarize-flask:
     PLACEHOLDER_LATEST: $BACK_SERVICE_TAG_LATEST
   needs:
     - test-back
+
 
 
 
