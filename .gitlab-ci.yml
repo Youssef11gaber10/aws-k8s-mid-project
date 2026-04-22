@@ -10,6 +10,7 @@ stages :
 variables:
   PLACEHOLDER_DIRECTORY: placeholder
   FRONT_SERVICE_TAG_LATEST: $DOCKERHUB_USERNAME/react-service-k8s:latest # change repo cause i change in dockerfile , default.conf
+  FRONT_SERVICE_TAG_LATEST: $DOCKERHUB_USERNAME/react-service-k8s:latest # change repo cause i change in dockerfile , default.conf
   BACK_SERVICE_TAG_LATEST: $DOCKERHUB_USERNAME/flask-service:latest
   PLACEHOLDER_LATEST: placeholder
   # REACT_APP_API_URL_ARG: "" # NOT AFFECT THE BUILD OF FLASK
