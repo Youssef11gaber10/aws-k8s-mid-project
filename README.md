@@ -39,6 +39,8 @@ The goal is simple: every push to `dev`, `test`, or `main` automatically goes th
 
 ![Full architecture diagram](result-images/eraser-diagram.png)
 
+[Open image in full size](result-images/eraser-diagram.png)
+
 ---
 
 ## CI/CD Pipeline Flow
