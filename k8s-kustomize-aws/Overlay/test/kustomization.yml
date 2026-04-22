@@ -1,5 +1,7 @@
+namespace: test
 resources:
   - ../../Base/
+  - ./external-secret.yml
 
 patchesStrategicMerge:
   - test-ingress.yml
@@ -11,7 +13,7 @@ replicas:
   - name: react-deployment
     count: 2
 
-secretGenerator:
-  - name: db-postgres-secret
-    envs:
-      - ./secrets/postgres-secret.env
+# secretGenerator:
+#   - name: db-postgres-secret
+#     envs:
+#       - ./secrets/postgres-secret.env

@@ -5,10 +5,12 @@ stages :
   - test
   - build-docker-images
   #this will be multi-branch pipeline at deploy stage
+  #this will be multi-branch pipeline at deploy stage
   - deploy
 
 variables:
   PLACEHOLDER_DIRECTORY: placeholder
+  FRONT_SERVICE_TAG_LATEST: $DOCKERHUB_USERNAME/react-service-k8s:latest # change repo cause i change in dockerfile , default.conf
   FRONT_SERVICE_TAG_LATEST: $DOCKERHUB_USERNAME/react-service-k8s:latest # change repo cause i change in dockerfile , default.conf
   BACK_SERVICE_TAG_LATEST: $DOCKERHUB_USERNAME/flask-service:latest
   PLACEHOLDER_LATEST: placeholder
@@ -28,9 +30,22 @@ variables:
 #       curl -X POST -H "Content-type: application/json" --data "{
 #         \"text\": \"👋 Hello team! Pipeline *#${CI_PIPELINE_ID}* just started on branch *${CI_COMMIT_REF_NAME}*! 🛠️\n\n🥁 *Drum rolls...* Get ready for action! 💪\n\n🎉 Let's hope this one doesn't break prod 😅\n\n🔗 <${CI_PIPELINE_URL}|Click here to watch the show!>\"
 #       }" $SLACK_WEBHOOK_URL
+# slack_pipeline_start:
+#   stage: notify
+#   image: curlimages/curl:latest
+#   script:
+#     - >
+#       curl -X POST -H "Content-type: application/json" --data "{
+#         \"text\": \"👋 Hello team! Pipeline *#${CI_PIPELINE_ID}* just started on branch *${CI_COMMIT_REF_NAME}*! 🛠️\n\n🥁 *Drum rolls...* Get ready for action! 💪\n\n🎉 Let's hope this one doesn't break prod 😅\n\n🔗 <${CI_PIPELINE_URL}|Click here to watch the show!>\"
+#       }" $SLACK_WEBHOOK_URL
 
 
 # want cache if you will do lint ,test to preserve the dependencies not install each time also cache ansible in last job not every deployment install it again 
+# cache:
+#   key: ${CI_COMMIT_REF_SLUG}
+#   paths:
+#     - ./frontend/node_modules
+#     - ./backend/youssef/venv
 # cache:
 #   key: ${CI_COMMIT_REF_SLUG}
 #   paths:
@@ -49,7 +64,25 @@ variables:
 #       - $ARTIFACT_PATH
 #   needs:
 #     - slack_pipeline_start
+# .install-dependencies-template:
+#   stage: install-dependencies
+#   image: $BASE_IMAGE
+#   script:
+#     - cd $PLACEHOLDER_DIRECTORY
+#     - $COMMAND
+#   artifacts:
+#     paths:
+#       - $ARTIFACT_PATH
+#   needs:
+#     - slack_pipeline_start
     
+# install-dependencies-front:
+#   extends: .install-dependencies-template
+#   variables:
+#     BASE_IMAGE: node:18-alpine
+#     PLACEHOLDER_DIRECTORY: ./frontend
+#     COMMAND: npm install
+#     ARTIFACT_PATH: ./frontend/node_modules
 # install-dependencies-front:
 #   extends: .install-dependencies-template
 #   variables:
@@ -72,7 +105,26 @@ variables:
 #     - python -m venv ./youssef/venv
 #     - . ./youssef/venv/bin/activate
 #     - pip install --no-cache-dir -r requirements.txt
+# install-dependencies-back:
+#   extends: .install-dependencies-template
+#   variables:
+#     BASE_IMAGE: python:3.11
+#     PLACEHOLDER_DIRECTORY: ./backend
+#     # COMMAND: sh -c 'python -m venv ./youssef/venv && . ./youssef/venv/bin/activate && pip install --no-cache-dir -r requirements.txt' # the venv created inside backend dir beside files of app
+#     ARTIFACT_PATH: ./backend/youssef/venv
+#   #the command cause error so i will implement it here 
+#   script: # its like i made antoher script section beside the extended one 
+#     - cd $PLACEHOLDER_DIRECTORY
+#     - python -m venv ./youssef/venv
+#     - . ./youssef/venv/bin/activate
+#     - pip install --no-cache-dir -r requirements.txt
 
+# .lint-template:
+#   stage: lint
+#   image: $BASE_IMAGE
+#   script:
+#     - cd $PLACEHOLDER_DIRECTORY
+#     - $COMMAND
 # .lint-template:
 #   stage: lint
 #   image: $BASE_IMAGE
@@ -81,6 +133,14 @@ variables:
 #     - $COMMAND
 
 
+# lint-front:
+#   extends: .lint-template
+#   variables:
+#     BASE_IMAGE: node:18-alpine
+#     PLACEHOLDER_DIRECTORY: ./frontend
+#     COMMAND: npm run lint 
+#   needs:
+#     - install-dependencies-front
 # lint-front:
 #   extends: .lint-template
 #   variables:
@@ -103,8 +163,27 @@ variables:
 #     - flake8 app.py 
 #   needs:
 #     - install-dependencies-back
+# lint-back:
+#   extends: .lint-template
+#   variables:
+#     BASE_IMAGE: python:3.11
+#     PLACEHOLDER_DIRECTORY: ./backend
+#     # need to activate venv before run flake8
+#     # COMMAND: flake8
+#   script:
+#     - cd $PLACEHOLDER_DIRECTORY
+#     - . ./youssef/venv/bin/activate
+#     - flake8 app.py 
+#   needs:
+#     - install-dependencies-back
 
 
+# .test-template:
+#   stage: test
+#   image: $BASE_IMAGE
+#   script:
+#     - cd $PLACEHOLDER_DIRECTORY
+#     - $COMMAND
 # .test-template:
 #   stage: test
 #   image: $BASE_IMAGE
@@ -120,7 +199,28 @@ variables:
 #     COMMAND: npm run test
 #   needs:
 #     - lint-front
+# test-front:
+#   extends: .test-template
+#   variables:
+#     BASE_IMAGE: node:18-alpine
+#     PLACEHOLDER_DIRECTORY: ./frontend
+#     COMMAND: npm run test
+#   needs:
+#     - lint-front
 
+# test-back:
+#   extends: .test-template
+#   variables:
+#     BASE_IMAGE: python:3.11
+#     PLACEHOLDER_DIRECTORY: ./backend
+#     # need to activate venv before run pytest
+#     # COMMAND: pytest
+#   script:
+#     - cd $PLACEHOLDER_DIRECTORY
+#     - . ./youssef/venv/bin/activate
+#     - pytest test_app.py || true
+#   needs:
+#     - lint-back
 # test-back:
 #   extends: .test-template
 #   variables:
@@ -148,7 +248,27 @@ variables:
 #     - cd $PLACEHOLDER_DIRECTORY
 #     - docker build  -t  $PLACEHOLDER_LATEST .
 #     - docker push $PLACEHOLDER_LATEST
+# .dockerize_template:
+#   stage: build-docker-images
+#   image: docker:latest
+#   services:
+#     - docker:dind
+#   before_script: # need them cause docker login need to be run before push image to repo 
+#     - docker login -u "$DOCKERHUB_USERNAME" -p "$DOCKERHUB_PASSWORD"
+#   script:
+#     - cd $PLACEHOLDER_DIRECTORY
+#     - docker build  -t  $PLACEHOLDER_LATEST .
+#     - docker push $PLACEHOLDER_LATEST
 
+# dockarize-react:
+#   extends: .dockerize_template
+#   variables:
+#     PLACEHOLDER_DIRECTORY: frontend
+#     PLACEHOLDER_LATEST: $FRONT_SERVICE_TAG_LATEST 
+#     # # REACT_APP_API_URL_ARG: --build-arg REACT_APP_API_URL=http://$EC2_HOST/api   # this replace http//localhost:3000/api in front 
+#     # REACT_APP_API_URL_ARG: --build-arg REACT_APP_API_URL=https://$EC2_HOST/api   # cause its will be static in code and you can do APIURL='/api' on ly in code and it work but because he put the ip static in code and this not normal so i will but here in var as https  
+#   needs:
+#     - test-front
 # dockarize-react:
 #   extends: .dockerize_template
 #   variables:
@@ -166,9 +286,17 @@ variables:
 #     PLACEHOLDER_LATEST: $BACK_SERVICE_TAG_LATEST
 #   needs:
 #     - test-back
+# dockarize-flask:
+#   extends: .dockerize_template
+#   variables:
+#     PLACEHOLDER_DIRECTORY: backend
+#     PLACEHOLDER_LATEST: $BACK_SERVICE_TAG_LATEST
+#   needs:
+#     - test-back
 
 
 
+deploy_to_eks:
 deploy_to_eks:
   stage: deploy
   image: 
