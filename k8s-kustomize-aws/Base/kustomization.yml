@@ -2,5 +2,4 @@ resources:
   - ./frontend-deployment
   - ./backend-deployment
   - ./statefulset-postgress
-  - ./external-secret.yml
   - ./secret-store.yml

@@ -1,5 +1,6 @@
 resources:
   - ../../Base/
+  - ./external-secret.yml
 
 patchesStrategicMerge:
   - dev-ingress.yml

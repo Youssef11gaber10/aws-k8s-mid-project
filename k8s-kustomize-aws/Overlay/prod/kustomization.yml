@@ -1,5 +1,6 @@
 resources:
   - ../../Base/
+  - ./external-secret.yml
 
 #no need to change this the base ingress (default) is the prod ingress
 # patchesStrategicMerge:
@@ -12,7 +13,7 @@ replicas:
   - name: react-deployment
     count: 3
 
-secretGenerator:
-  - name: db-postgres-secret
-    envs:
-      - ./secrets/postgres-secret.env
+# secretGenerator:
+#   - name: db-postgres-secret
+#     envs:
+#       - ./secrets/postgres-secret.env
