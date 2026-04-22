@@ -20,22 +20,22 @@ variables:
 
 
 
-slack_pipeline_start:
-  stage: notify
-  image: curlimages/curl:latest
-  script:
-    - >
-      curl -X POST -H "Content-type: application/json" --data "{
-        \"text\": \"👋 Hello team! Pipeline *#${CI_PIPELINE_ID}* just started on branch *${CI_COMMIT_REF_NAME}*! 🛠️\n\n🥁 *Drum rolls...* Get ready for action! 💪\n\n🎉 Let's hope this one doesn't break prod 😅\n\n🔗 <${CI_PIPELINE_URL}|Click here to watch the show!>\"
-      }" $SLACK_WEBHOOK_URL
+# slack_pipeline_start:
+#   stage: notify
+#   image: curlimages/curl:latest
+#   script:
+#     - >
+#       curl -X POST -H "Content-type: application/json" --data "{
+#         \"text\": \"👋 Hello team! Pipeline *#${CI_PIPELINE_ID}* just started on branch *${CI_COMMIT_REF_NAME}*! 🛠️\n\n🥁 *Drum rolls...* Get ready for action! 💪\n\n🎉 Let's hope this one doesn't break prod 😅\n\n🔗 <${CI_PIPELINE_URL}|Click here to watch the show!>\"
+#       }" $SLACK_WEBHOOK_URL
 
 
 # want cache if you will do lint ,test to preserve the dependencies not install each time also cache ansible in last job not every deployment install it again 
-cache:
-  key: ${CI_COMMIT_REF_SLUG}
-  paths:
-    - ./frontend/node_modules
-    - ./backend/youssef/venv
+# cache:
+#   key: ${CI_COMMIT_REF_SLUG}
+#   paths:
+#     - ./frontend/node_modules
+#     - ./backend/youssef/venv
 
 
 # .install-dependencies-template:
@@ -213,7 +213,7 @@ deploy_to_eks:
     # - if: '$CI_COMMIT_BRANCH == "main"'
     # - if: '$CI_COMMIT_BRANCH == "test"'
     # - if: '$CI_COMMIT_BRANCH == "dev"'
-    - if:'$CI_COMMIT_BRANCH =~ /^(dev|test|main)$/'
+    - if: '$CI_COMMIT_BRANCH =~ /^(dev|test|main)$/'
 
 
 
