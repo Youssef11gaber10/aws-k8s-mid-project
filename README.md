@@ -35,6 +35,10 @@ The goal is simple: every push to `dev`, `test`, or `main` automatically goes th
 - **CI/CD**: GitLab CI
 - **Notifications**: Slack webhook (pipeline start)
 
+### Full Architecture Diagram
+
+![Full architecture diagram](result-images/eraser-diagram.png)
+
 ---
 
 ## CI/CD Pipeline Flow
