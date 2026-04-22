@@ -213,8 +213,8 @@ deploy_to_eks:
     # - if: '$CI_COMMIT_BRANCH == "main"'
     # - if: '$CI_COMMIT_BRANCH == "test"'
     # - if: '$CI_COMMIT_BRANCH == "dev"'
-    - if: '$CI_COMMIT_BRANCH =~ /^(dev|test|main)$/'
-
+    - if: '$CI_COMMIT_BRANCH =~ /^(dev|test|main)$/' # must make all jobs run on all 3 branches
+# must make all branches protected to see the variables or make the variables appear to not protected branches
 
 
 
